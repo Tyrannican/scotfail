@@ -76,14 +76,32 @@ def get_info(station_code, destination=None):
     services = get_services(station_code, destination)
     service_info = {}
     for service in services:
-        info = {
-            "platform": service["platform"],
-            "arrives": service["arrives"],
-            "expected": service["expected"],
-            "destination": service["destination"],
-            "origin": service["origin"]
-        }
-        service_info[service["departs"]] = info
+        if service["departs"] and service["arrives"]:
+            info = {
+                "platform": service["platform"],
+                "arrives": service["arrives"],
+                "expected": service["expected"],
+                "destination": service["destination"],
+                "origin": service["origin"]
+            }
+
+            service_info["Departure: " + service["departs"]] = info
+        elif service["departs"]:
+            info = {
+                "platform": service["platform"],
+                "expected": service["expected"],
+                "destination": service["destination"],
+                "origin": service["origin"]
+            }
+            service_info["Departure: " + service["departs"]] = info
+        elif service["arrives"]:
+            info = {
+                "platform": service["platform"],
+                "expected": service["expected"],
+                "destination": service["destination"],
+                "origin": service["origin"]
+            }
+            service_info["Arrival: " + service["arrives"]] = info
 
     return service_info
 
@@ -98,16 +116,27 @@ def enquire(sc, dest=None):
         dest {str} -- Three letter station code for destination (Optional)
     """
 
+    codes = read_code_file()
+
     if not dest:
         info = get_info(sc)
     else:
-        codes = read_code_file()
         info = get_info(sc, destination=codes[dest])
 
     if not info:
         print("No services.")
     else:
-        print(info)
+        print(f"Services from {codes[sc]}\n")
+        for service, s_info in info.items():
+            if dest:
+                print(f"From: {codes[sc]} To: {codes[dest]} ({service})")
+            else:
+                print(f"From: {codes[sc]} ({service})")
+            for key, value in s_info.items():
+                print(f"{key.capitalize()}: {value}")
+            print()
+            
+
 
 if __name__ == "__main__":
     import sys
